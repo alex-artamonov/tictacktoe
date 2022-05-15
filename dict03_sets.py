@@ -2,6 +2,7 @@ from random import choice
 from random import shuffle
 from sys import exit
 
+QUIT = "quit"
 HUMAN_NAME = 'human_name'
 HUMAN_MARK = 'human_mark'
 COMPUTER_MARK = 'computer_mark'
@@ -35,18 +36,22 @@ legal_moves = [(0, 0), (0, 1), (0, 2),
 
 # BEST_MOVES = [(1, 1), (0, 0), (0, 2), (2, 0), (2, 2)]
 
-ROW_0 = {(0, 0), (0, 1), (0, 2)}
-ROW_1 = {(1, 0), (1, 1), (1, 2)}
-ROW_2 = {(2, 0), (2, 1), (2, 2)}
-COL_0 = {(0, 0), (1, 0), (2, 0)}
-COL_1 = {(0, 1), (1, 1), (2, 1)}
-COL_2 = {(0, 2), (1, 2), (2, 2)}
-DIAG_0 = {(0, 0), (1, 1), (2, 2)}
-DIAG_1 = {(0, 2), (1, 1), (2, 0)}
+ROW_0 = [(0, 0), (0, 1), (0, 2)]
+ROW_1 = [(1, 0), (1, 1), (1, 2)]
+ROW_2 = [(2, 0), (2, 1), (2, 2)]
+COL_0 = [(0, 0), (1, 0), (2, 0)]
+COL_1 = [(0, 1), (1, 1), (2, 1)]
+COL_2 = [(0, 2), (1, 2), (2, 2)]
+DIAG_0 = [(0, 0), (1, 1), (2, 2)]
+DIAG_1 = [(0, 2), (1, 1), (2, 0)]
+CORNERS = [(0, 0), (0, 2), (2, 2), (2, 0)]
+SIDES = [(0, 1), (1, 2), (2, 1), (1, 0)]
+
 
 DIMENSIONS = [ROW_0, ROW_1, ROW_2, COL_0, COL_1, COL_2, DIAG_0, DIAG_1]
-
+# previous_human_move = ()
 score = {}
+
 
 
 def clear_moves():
@@ -226,7 +231,7 @@ def human_move():
     # current_player = players_moves[CURRENT_PLAYER]
     human_mark = players_moves[HUMAN_MARK]
     human_name = players_moves[HUMAN_NAME]
-    assert human_mark != ''
+    # assert human_mark != ''
     # players_moves[CURRENT_PLAYER] = players_moves[human_name]
     # players_moves[CURRENT_PLAYER] = 'asdf'
     d = {NOUGHT: 'за нолики', CROSS: 'за крестики'}
@@ -239,6 +244,9 @@ def human_move():
         print(f"Ваш ход {d[human_mark]} (первая цифра ряд, вторая - столбец):")
         while True:
             mv = input(INP_INVITE)
+            if mv.lower().strip() == QUIT:
+                print_score()
+                exit()
             if mv in legal_moves_str():
                 mv = (int(mv[0]), int(mv[1]))
                 players_moves[CURRENT_MOVE] = mv
@@ -257,9 +265,8 @@ def human_move():
         win_or_continue(human_name)
 
 
-def computer_move():
+def computer_move(previous_move = None):
     # global players_moves
-
     computer_name = players_moves[COMPUTER_NAME]
     computer_mark = players_moves[COMPUTER_MARK]
     human_mark = players_moves[HUMAN_MARK]
@@ -267,25 +274,31 @@ def computer_move():
     assert human_mark != ''
 
     players_moves[CURRENT_PLAYER] = players_moves[COMPUTER_NAME]
+    mv = ()
+
+# (https://ru.wikipedia.org/wiki/%D0%9A%D1%80%D0%B5%D1%81%D1%82%D0%B8%D0%BA%D0%B8-%D0%BD%D0%BE%D0%BB%D0%B8%D0%BA%D0%B8)
+
     if no_more_moves():
         action_draw()
+    elif players_moves[COUNTER] == 0:  # За крестики: первый ход сделать в центр
+        print("*За крестики: первый ход сделать в центр*")
+        mv = (1, 1)
     else:
         mv = kill() or check_danger(human_mark) or attack() or try_best_moves() or random_move()
-        players_moves[CURRENT_MOVE] = mv
-        field[mv] = computer_mark
-        legal_moves.remove(mv)
-        #        print('hi from human_move, legal_moves: ', str(legal_moves))
-        players_moves[COUNTER] += 1
-        print_field()
-        print(output_moves())
-        win_or_continue(computer_name)
+    players_moves[CURRENT_MOVE] = mv
+    field[mv] = computer_mark
+    legal_moves.remove(mv)
+    #        print('hi from human_move, legal_moves: ', str(legal_moves))
+    players_moves[COUNTER] += 1
+    print_field()
+    print(output_moves())
+    win_or_continue(computer_name)
 
 
 def kill():
     # print('hi from kill')
     global players_moves
-
-    assert players_moves[COMPUTER_MARK] != ''
+    # assert players_moves[COMPUTER_MARK] != ''
     print('I\'m trying to kill')
     msg = "*killing move!*"
     res = check_danger(players_moves[COMPUTER_MARK], msg)
@@ -329,6 +342,26 @@ def random_move():
     global legal_moves
     print('*random move!*')
     return choice(legal_moves)
+
+
+
+# Первый ход сделать в центр. Остальные ходы, если неприменимы правила 1—2, делаются в тот из свободных углов,
+# который дальше всего от предыдущего хода ноликов, а если и это невозможно — в любую клетку.
+def crosses_strategy():
+
+    lgl_moves = [(0, 0), (0, 1), (0, 2),
+                   ]
+    mv = ()
+    # corners = set(CORNERS)
+    moves = set(lgl_moves) & set(CORNERS)
+    print(moves)
+    if players_moves[CURRENT_MOVE] is None:
+        mv = (1, 1)
+    else:
+        pass
+
+    # return mv
+
 
 
 def try_best_moves():
@@ -474,6 +507,8 @@ def check_attack():
 
 
 
-check_attack()
+# check_attack()
 
+# start_game()
 
+crosses_strategy()

@@ -2,7 +2,6 @@ from random import choice
 from random import shuffle
 from sys import exit
 
-
 HUMAN_NAME = 'human_name'
 HUMAN_MARK = 'human_mark'
 COMPUTER_MARK = 'computer_mark'
