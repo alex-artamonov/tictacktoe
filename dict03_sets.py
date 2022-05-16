@@ -26,8 +26,8 @@ players_moves = {
     COUNTER: 0
 }
 field = {(0, 0): EMPTY, (0, 1): EMPTY, (0, 2): EMPTY,
-         (1, 0): EMPTY, (1, 1): CROSS, (1, 2): CROSS,
-         (2, 0): NOUGHT, (2, 1): EMPTY, (2, 2): EMPTY}
+         (1, 0): EMPTY, (1, 1): EMPTY, (1, 2): EMPTY,
+         (2, 0): EMPTY, (2, 1): EMPTY, (2, 2): EMPTY}
 
 legal_moves = [(0, 0), (0, 1), (0, 2),
                (1, 0), (1, 1), (1, 2),
@@ -280,9 +280,11 @@ def computer_move(previous_move = None):
 
     if no_more_moves():
         action_draw()
-    elif players_moves[COUNTER] == 0:  # За крестики: первый ход сделать в центр
+    # elif players_moves[COUNTER] == 0:  # За крестики: первый ход сделать в центр
+    elif players_moves[COMPUTER_MARK] == CROSS:
         print("*За крестики: первый ход сделать в центр*")
-        mv = (1, 1)
+        # mv = (1, 1)
+        mv = crosses_strategy()
     else:
         mv = kill() or check_danger(human_mark) or attack() or try_best_moves() or random_move()
     players_moves[CURRENT_MOVE] = mv
@@ -297,7 +299,7 @@ def computer_move(previous_move = None):
 
 def kill():
     # print('hi from kill')
-    global players_moves
+    # global players_moves
     # assert players_moves[COMPUTER_MARK] != ''
     print('I\'m trying to kill')
     msg = "*killing move!*"
@@ -344,23 +346,47 @@ def random_move():
     return choice(legal_moves)
 
 
+def get_fartherst_corner(corners, prev_mv):
+
+    dist, mv = 0, corners[0]
+    for corner in corners:
+        print(mv, corner)
+        dist = abs(complex(*mv) - complex(*prev_mv))
+        print(dist)
+        if abs(complex(*corner) - complex(*prev_mv)) > dist:
+            mv = corner
+            print("hi from get_fartherst_corner", mv)
+        else:
+            continue
+    return mv
+
+
+
+
 
 # Первый ход сделать в центр. Остальные ходы, если неприменимы правила 1—2, делаются в тот из свободных углов,
 # который дальше всего от предыдущего хода ноликов, а если и это невозможно — в любую клетку.
 def crosses_strategy():
+    print("crosses_strategy called")
 
-    lgl_moves = [(0, 0), (0, 1), (0, 2),
-                   ]
+    # lgl_moves = [(0, 0), (0, 1), (0, 2),
+    #                ]
+    # players_moves[CURRENT_MOVE] = (2, 0)
     mv = ()
     # corners = set(CORNERS)
-    moves = set(lgl_moves) & set(CORNERS)
-    print(moves)
-    if players_moves[CURRENT_MOVE] is None:
+    free_corners = list(set(legal_moves) & set(CORNERS))
+    # print(moves)
+    print("opponent's previous move:", players_moves[CURRENT_MOVE])
+    if no_more_moves():
+        action_draw()
+    elif players_moves[COUNTER] == 0: # первый ход - в центр
+        print("hi from first move")
         mv = (1, 1)
     else:
-        pass
+        mv = kill() or check_danger(NOUGHT) or \
+             get_fartherst_corner(free_corners, players_moves[CURRENT_MOVE]) or random_move()
 
-    # return mv
+    return mv
 
 
 
@@ -504,11 +530,11 @@ def check_attack():
         values = list(dim.values())
         if values.count(CROSS) == 2 and values.count(EMPTY) == 1:
             print(dim, keys[values.index(EMPTY)])
+            return keys[values.index(EMPTY)]
 
 
+# print(check_attack()
 
-# check_attack()
+start_game()
 
-# start_game()
-
-crosses_strategy()
+# crosses_strategy()

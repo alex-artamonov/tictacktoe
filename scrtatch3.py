@@ -42,7 +42,7 @@ def view_dimensions():
     return view
 #
 # print(len(view_dimensions()))
-[print(dim) for dim in view_dimensions()]
+# [print(dim) for dim in view_dimensions()]
 
 
 # a = {'a':10, 'b': 20, 'c': 30, 'd': 40}
@@ -78,3 +78,21 @@ def print_field():
 # d = {NOUGHT:'за нолики', CROSS: 'за крестики'}
 # s = d[NOUGHT]
 # print(s)
+
+def get_fartherst_corner(prev_mv=(0, 0)):
+    CORNERS = [(0, 0), (0, 2), (2, 2), (2, 0)]
+
+    dist, mv = 0, CORNERS[0]
+    for corner in CORNERS:
+        print(mv, corner)
+        dist = abs(complex(*mv) - complex(*prev_mv))
+        print(dist)
+        if abs(complex(*corner) - complex(*prev_mv)) > dist:
+            mv = corner
+        else:
+            continue
+    return mv
+
+
+
+get_fartherst_corner()
