@@ -2,13 +2,15 @@ from random import choice
 from random import shuffle
 from sys import exit
 
-QUIT = "quit"
+RULE_1 = "*Первое правило крестиков-ноликов: если есть возможноть - то делать выигрышный ход*"
+RULE_2 = "*Второе правило  крестиков-ноликов: предотвратить немедленный проигрыш*"
+
+QUIT = "QUIT"
 HUMAN_NAME = 'human_name'
 HUMAN_MARK = 'human_mark'
 COMPUTER_MARK = 'computer_mark'
 COMPUTER_NAME = 'computer_name'
 CURRENT_PLAYER = 'current_player'
-COUNTER = 'counter'
 CURRENT_MOVE = 'current_move'
 SHIFT_FIELD = 10
 HEADS_TALES = ('1', '2')
@@ -23,18 +25,11 @@ players_moves = {
     COMPUTER_MARK: '',
     CURRENT_PLAYER: '',
     CURRENT_MOVE: (),
-    COUNTER: 0
 }
 field = {(0, 0): EMPTY, (0, 1): EMPTY, (0, 2): EMPTY,
          (1, 0): EMPTY, (1, 1): EMPTY, (1, 2): EMPTY,
          (2, 0): EMPTY, (2, 1): EMPTY, (2, 2): EMPTY}
 
-legal_moves = [(0, 0), (0, 1), (0, 2),
-               (1, 0), (1, 1), (1, 2),
-               (2, 0), (2, 1), (2, 2)]
-# legal_moves = ['00', '01']
-
-# BEST_MOVES = [(1, 1), (0, 0), (0, 2), (2, 0), (2, 2)]
 
 ROW_0 = [(0, 0), (0, 1), (0, 2)]
 ROW_1 = [(1, 0), (1, 1), (1, 2)]
@@ -53,21 +48,22 @@ DIMENSIONS = [ROW_0, ROW_1, ROW_2, COL_0, COL_1, COL_2, DIAG_0, DIAG_1]
 score = {}
 
 
+def get_moves_count():
+    lst = list(field.values())
+    return len(lst) - lst.count(EMPTY)
 
-def clear_moves():
-    global legal_moves
-    legal_moves = [(0, 0), (0, 1), (0, 2),
-                   (1, 0), (1, 1), (1, 2),
-                   (2, 0), (2, 1), (2, 2)]
+
+def get_legal_moves():
+    return [key for (key, value) in field.items() if value == EMPTY]
 
 
 def clear_field():
     global field
-    # print("hi from clear_field()")
-    field = {(0, 0): EMPTY, (0, 1): EMPTY, (0, 2): EMPTY,
-             (1, 0): EMPTY, (1, 1): EMPTY, (1, 2): EMPTY,
-             (2, 0): EMPTY, (2, 1): EMPTY, (2, 2): EMPTY}
-    clear_moves()
+    for cell in field:
+        field[cell] = EMPTY
+    # field = {(0, 0): EMPTY, (0, 1): EMPTY, (0, 2): EMPTY,
+    #          (1, 0): EMPTY, (1, 1): EMPTY, (1, 2): EMPTY,
+    #          (2, 0): EMPTY, (2, 1): EMPTY, (2, 2): EMPTY}
 
 
 def output_moves():
@@ -124,7 +120,6 @@ def view_dimensions():
     return view
 
 
-
 def shift_right(text, n=2):
     s = ''
     ls = text.splitlines(True)
@@ -136,7 +131,8 @@ def shift_right(text, n=2):
 def border(fnc):
     def wrapper(nbr_spaces=SHIFT_FIELD):
 
-        counter = players_moves[COUNTER]
+        # counter = players_moves[COUNTER]
+        counter = get_moves_count()
         current_player = players_moves[CURRENT_PLAYER]
         current_move = players_moves[CURRENT_MOVE]
 
@@ -147,7 +143,9 @@ def border(fnc):
             print()
         else:
             clear_field()
-            print(f"\nВот как выглядит игровое поле. Сначала указываются ряды, потом - столбцы:")
+            s = "\nВот как выглядит игровое поле. Сначала указываются ряды, потом - столбцы:"
+            s += "Для ходя введите две цифры подрад, например 01. Чnобы выйти введите quit."
+            print(s)
             print(output_moves())
             fnc(nbr_spaces)
             print()
@@ -155,31 +153,17 @@ def border(fnc):
 
 
 @border
-def print_field_old(spaces=2):
-    s = "\n   0  1  2\n"
-    n = 0
-
-    for i in range(3):
-        # print(list(field[i][j] for j in range(3)))
-        s += str(n)
-        for j in range(3):
-            s = s + '  ' + field[(i, j)]
-        s += '\n'
-        n += 1
-    s = s[0:-1]  # уберем 1 переход на новую строку
-    s = shift_right(s, spaces)
-    print(s)
-
-
-@border
 def print_field(spaces):
-    s = "\n    0   1   2\n\n"
+    global EMPTY
+    EMPTY = " "
+    s = "\n    0    1    2\n\n"
     n = 0
-    horiz_line = '\n    ---------\n'
+
+    horiz_line = '\n    -----------\n'
     for i in range(3):
         # print(list(field[i][j] for j in range(3)))
         s += str(n)
-        t = ' '.join(field[(i, j)] + ' |' for j in range(3))[:-1]   # уберем 1 вертикальный разделитель
+        t = '  '.join(field[(i, j)] + ' |' for j in range(3))[:-1]   # уберем 1 вертикальный разделитель
         s += '   ' + t + horiz_line
         n += 1
     s = s[:-len(horiz_line)-1]  # уберем 1 горизонтальный разделитель
@@ -188,30 +172,30 @@ def print_field(spaces):
 
 
 def legal_moves_str():
-    global legal_moves
-    lst = [str(t[0]) + str(t[1]) for t in legal_moves]
-    return lst
-
-
-def no_more_moves():
-    res = len(legal_moves) == 0
-    return res
+    return [str(t[0]) + str(t[1]) for t in get_legal_moves()]
 
 
 def play_again_or_leave():
     human_name = players_moves[HUMAN_NAME]
     print("Сыграем еще? (Y/n)")
-    reply = input(INP_INVITE).upper()
+    reply = input(INP_INVITE).upper().strip()
     if reply in ('Y', ''):
         res = True
-    elif reply == 'N':
+    elif reply == 'N' or "QUIT":
         res = False
     else:
         print(f'не понял ответа, {human_name}, но видимо, нет')
         res = False
     if res:
         print("Отлично, следующая игра!")
-        initialize_game()
+        # initialize_game()
+        clear_field()
+        players_moves[HUMAN_MARK], players_moves[COMPUTER_MARK] = players_moves[COMPUTER_MARK], players_moves[HUMAN_MARK]
+        if players_moves[COMPUTER_MARK] == CROSS:
+            print("теперь я за крестики")
+            computer_move()
+        else:
+            human_move()
     else:
         print(f"Ну ладно, пока, {human_name}!")
         exit(0)
@@ -226,35 +210,27 @@ def action_draw():
 
 
 def human_move():
-
-    # global players_moves
-    # current_player = players_moves[CURRENT_PLAYER]
     human_mark = players_moves[HUMAN_MARK]
     human_name = players_moves[HUMAN_NAME]
-    # assert human_mark != ''
-    # players_moves[CURRENT_PLAYER] = players_moves[human_name]
-    # players_moves[CURRENT_PLAYER] = 'asdf'
+
     d = {NOUGHT: 'за нолики', CROSS: 'за крестики'}
     players_moves[CURRENT_PLAYER] = players_moves[HUMAN_NAME]
     # print('from human_move:', players_moves)
-    if no_more_moves():
+    if len(get_legal_moves()) == 0:  # если ходов больше нет
         action_draw()
     else:
         # current_player = human_name
         print(f"Ваш ход {d[human_mark]} (первая цифра ряд, вторая - столбец):")
         while True:
             mv = input(INP_INVITE)
-            if mv.lower().strip() == QUIT:
+            if mv.upper().strip() == QUIT:
+                print(f"Ну ладно, пока, {human_name}!")
                 print_score()
                 exit()
             if mv in legal_moves_str():
                 mv = (int(mv[0]), int(mv[1]))
                 players_moves[CURRENT_MOVE] = mv
-                # print("mv:", mv)
-                # print('hi from human_move:else, players_moves:', players_moves)
                 field[mv] = human_mark
-                players_moves[COUNTER] += 1
-                legal_moves.remove(mv)
                 print_field(10)
                 break
             else:
@@ -265,74 +241,50 @@ def human_move():
         win_or_continue(human_name)
 
 
-def computer_move(previous_move = None):
-    # global players_moves
+# (https://ru.wikipedia.org/wiki/%D0%9A%D1%80%D0%B5%D1%81%D1%82%D0%B8%D0%BA%D0%B8-%D0%BD%D0%BE%D0%BB%D0%B8%D0%BA%D0%B8)
+def computer_move():
+    mv = ()
     computer_name = players_moves[COMPUTER_NAME]
     computer_mark = players_moves[COMPUTER_MARK]
-    human_mark = players_moves[HUMAN_MARK]
-    assert computer_mark != ''
-    assert human_mark != ''
 
     players_moves[CURRENT_PLAYER] = players_moves[COMPUTER_NAME]
-    mv = ()
-
-# (https://ru.wikipedia.org/wiki/%D0%9A%D1%80%D0%B5%D1%81%D1%82%D0%B8%D0%BA%D0%B8-%D0%BD%D0%BE%D0%BB%D0%B8%D0%BA%D0%B8)
-
-    if no_more_moves():
+    if len(get_legal_moves()) == 0:
         action_draw()
-    # elif players_moves[COUNTER] == 0:  # За крестики: первый ход сделать в центр
     elif players_moves[COMPUTER_MARK] == CROSS:
-        print("*За крестики: первый ход сделать в центр*")
-        # mv = (1, 1)
         mv = crosses_strategy()
     else:
-        mv = kill() or check_danger(human_mark) or attack() or try_best_moves() or random_move()
+        mv = noughts_strategy()
     players_moves[CURRENT_MOVE] = mv
     field[mv] = computer_mark
-    legal_moves.remove(mv)
-    #        print('hi from human_move, legal_moves: ', str(legal_moves))
-    players_moves[COUNTER] += 1
     print_field()
     print(output_moves())
     win_or_continue(computer_name)
 
 
-def kill():
-    # print('hi from kill')
-    # global players_moves
-    # assert players_moves[COMPUTER_MARK] != ''
-    print('I\'m trying to kill')
-    msg = "*killing move!*"
-    res = check_danger(players_moves[COMPUTER_MARK], msg)
-    print('from kill:', res)
-    return check_danger(players_moves[COMPUTER_MARK], msg)
+def check_danger(mark, msg):
+    vw = view_dimensions()
 
+    for dim in vw:
+        keys = list(dim.keys())
+        values = list(dim.values())
 
-def check_danger(mark, msg=''):
-    # print("human_mark:", human_mark, "mark:", mark or "empty string")
-    # assert mark != ''
-    print('hi from check_danger', mark, 'msg:', msg)
-    #    bool = False
-    s = msg or '*Danger! I\'m defending!*'
-    for dim in DIMENSIONS:
-        i = where_attack([field[cell] for cell in dim], mark)
-        if i is None:
-            pass
-        else:
-            print(s)
-            return dim[i]
-    return False
+        if values.count(mark) == 2 and values.count(EMPTY) == 1:
+            mv = keys[values.index(EMPTY)]
+            print(msg)
+            return mv
 
 
 def attack():
     mark = players_moves[COMPUTER_MARK]
-    for dim in DIMENSIONS:
-        keys = [cell for cell in dim]
-        values = [field[cell] for cell in dim]
+    vw = view_dimensions()
+
+    for dim in vw:
+        keys = list(dim.keys())
+        values = list(dim.values())
         # print(keys, values)
         if values.count(EMPTY) == 2 and values.count(mark) == 1:
             # print(lst, dim, lst.index(EMPTY))
-            mv = keys[values.index(EMPTY)]
+            mv = keys[values.index(EMPTY)][0]
             print("*Attacking!*", mv)
             # print(mv)
             return mv
@@ -341,53 +293,62 @@ def attack():
 
 
 def random_move():
-    global legal_moves
     print('*random move!*')
-    return choice(legal_moves)
+    return choice(get_legal_moves())
 
 
 def get_fartherst_corner(corners, prev_mv):
+# реализация части стратегии из Вики:
+# https://ru.wikipedia.org/wiki/%D0%9A%D1%80%D0%B5%D1%81%D1%82%D0%B8%D0%BA%D0%B8-%D0%BD%D0%BE%D0%BB%D0%B8%D0%BA%D0%B8
+# Остальные ходы, если неприменимы правила 1—2, делаются в тот из свободных углов,
+# который дальше всего от предыдущего хода ноликов
+    if not corners:
+        return False
+    else:
+        dist, mv = 0, corners[0]
+        for corner in corners:
+            # print(mv, corner)
+            dist = abs(complex(*mv) - complex(*prev_mv))
+            # print(dist)
+            if abs(complex(*corner) - complex(*prev_mv)) > dist:
+                mv = corner
 
-    dist, mv = 0, corners[0]
-    for corner in corners:
-        print(mv, corner)
-        dist = abs(complex(*mv) - complex(*prev_mv))
-        print(dist)
-        if abs(complex(*corner) - complex(*prev_mv)) > dist:
-            mv = corner
-            print("hi from get_fartherst_corner", mv)
-        else:
-            continue
-    return mv
+            else:
+                continue
+        print("*Ход в дальний угол*")
+        return mv
 
 
-
-
-
-# Первый ход сделать в центр. Остальные ходы, если неприменимы правила 1—2, делаются в тот из свободных углов,
-# который дальше всего от предыдущего хода ноликов, а если и это невозможно — в любую клетку.
 def crosses_strategy():
-    print("crosses_strategy called")
 
-    # lgl_moves = [(0, 0), (0, 1), (0, 2),
-    #                ]
-    # players_moves[CURRENT_MOVE] = (2, 0)
-    mv = ()
-    # corners = set(CORNERS)
-    free_corners = list(set(legal_moves) & set(CORNERS))
-    # print(moves)
-    print("opponent's previous move:", players_moves[CURRENT_MOVE])
-    if no_more_moves():
-        action_draw()
-    elif players_moves[COUNTER] == 0: # первый ход - в центр
-        print("hi from first move")
+    free_corners = list(set(get_legal_moves()) & set(CORNERS))   # находим свободные углы
+
+    # Первый ход сделать в центр. Остальные ходы, если неприменимы правила 1—2, делаются в тот из свободных углов,
+    # который дальше всего от предыдущего хода ноликов, а если и это невозможно — в любую клетку.
+    # https://ru.wikipedia.org/wiki/%D0%9A%D1%80%D0%B5%D1%81%D1%82%D0%B8%D0%BA%D0%B8-%D0%BD%D0%BE%D0%BB%D0%B8%D0%BA%D0%B8
+
+    if get_moves_count() == 0:   # первый ход - в центр
+        print("*За крестики: первый ход сделать в центр*")
         mv = (1, 1)
     else:
-        mv = kill() or check_danger(NOUGHT) or \
+        mv = check_danger(CROSS, RULE_1) or check_danger(NOUGHT, RULE_2) or \
              get_fartherst_corner(free_corners, players_moves[CURRENT_MOVE]) or random_move()
-
     return mv
 
+
+def noughts_strategy():
+
+    # Если крестики сделали первый ход в центр, до конца игры ходить в любой угол,
+    # а если это невозможно — в любую клетку.
+    # Если крестики сделали первый ход в угол, ответить ходом в центр.
+
+    if get_moves_count() == 1 and players_moves[CURRENT_MOVE] in SIDES:
+        print('?first move on a side? Uhm...')
+        mv = (1, 1)
+    else:
+        mv = check_danger(NOUGHT, RULE_1) or check_danger(CROSS, RULE_2) or try_best_moves() or random_move()
+
+    return mv
 
 
 def try_best_moves():
@@ -397,7 +358,7 @@ def try_best_moves():
     # print('best_moves:', best_moves)
     for mv in best_moves:
         # print(mv)
-        if mv in legal_moves:
+        if mv in get_legal_moves():
             print("*one of the best moves!*")
             return mv
         else:
@@ -405,7 +366,6 @@ def try_best_moves():
 
 
 def win_or_continue(player):
-    global players_moves
     human_name = players_moves[HUMAN_NAME]
     computer_name = players_moves[COMPUTER_NAME]
     human_mark = players_moves[HUMAN_MARK]
@@ -458,19 +418,20 @@ def where_attack(triad, mark):
 
 
 def initialize_game():
-    global HEADS_TALES
     global players_moves
 
     computer_name = players_moves[COMPUTER_NAME]
     human_name = players_moves[HUMAN_NAME]
 
-    # print("from initialize game: players_moves:", players_moves)
-    players_moves[COUNTER] = 0
     print(f"Для начала определим, кто первый ходит, {computer_name} или "
           f"{human_name}. Первый будет ходить крестиками.")
     print('орел? (1) или решка? (2)')
     clear_field()
-    s = input(INP_INVITE)
+    s = input(INP_INVITE).upper().strip()
+
+    if s == QUIT:
+        print("ну ладно, пока!")
+        exit()
     if s in HEADS_TALES:
         t = choice(HEADS_TALES)
         if s.upper() == t:
@@ -500,7 +461,7 @@ def greeting():
     if create_score(players_moves[HUMAN_NAME]):
         print_score()
     else:
-        print('From greeting(): something is wrong')
+        print('*From greeting(): something is wrong*')
 
 
 def start_game():
@@ -509,32 +470,4 @@ def start_game():
     initialize_game()
 
 
-# # print("random move:", choice(legal_moves))
-# # human_move()
-# initialize_game()
-
-# print(DIMENSIONS[2])
-
-# start_game()
-# print_field()
-def print_vw_dimensions():
-    [print(dim) for dim in view_dimensions()]
-
-
-# print_vw_dimensions()
-
-def check_attack():
-    vw = view_dimensions()
-    for dim in vw:
-        keys = list(dim.keys())
-        values = list(dim.values())
-        if values.count(CROSS) == 2 and values.count(EMPTY) == 1:
-            print(dim, keys[values.index(EMPTY)])
-            return keys[values.index(EMPTY)]
-
-
-# print(check_attack()
-
 start_game()
-
-# crosses_strategy()
