@@ -95,10 +95,8 @@ def update_score(winner):
 
 
 def print_score():
-    # print('score:', score)
     computer_name = players_moves[COMPUTER_NAME]
     human_name = players_moves[HUMAN_NAME]
-    # print('computer_name:', computer_name, 'human_name:', human_name)
     head = '| ' + computer_name + ' | ' + human_name + ' |'
     s_border = '=' * len(head)
     numbers = '|' + str(score[computer_name]).center(len(computer_name) + 2)
@@ -130,13 +128,10 @@ def shift_right(text, n=2):
 
 def border(fnc):
     def wrapper(nbr_spaces=SHIFT_FIELD):
-
-        # counter = players_moves[COUNTER]
         counter = get_moves_count()
         current_player = players_moves[CURRENT_PLAYER]
         current_move = players_moves[CURRENT_MOVE]
 
-        # nbr_spaces = 10
         if counter > 0:
             print(f"\n~~~Ход № {counter}, {current_player}:{current_move}~~~")
             fnc(nbr_spaces)
@@ -161,7 +156,6 @@ def print_field(spaces):
 
     horiz_line = '\n    -----------\n'
     for i in range(3):
-        # print(list(field[i][j] for j in range(3)))
         s += str(n)
         t = '  '.join(field[(i, j)] + ' |' for j in range(3))[:-1]   # уберем 1 вертикальный разделитель
         s += '   ' + t + horiz_line
@@ -202,7 +196,6 @@ def play_again_or_leave():
 
 
 def action_draw():
-    # global human_name
 
     print(f"{players_moves[HUMAN_NAME]}, похоже, у нас ничья!")
     print_score()
@@ -215,11 +208,9 @@ def human_move():
 
     d = {NOUGHT: 'за нолики', CROSS: 'за крестики'}
     players_moves[CURRENT_PLAYER] = players_moves[HUMAN_NAME]
-    # print('from human_move:', players_moves)
     if len(get_legal_moves()) == 0:  # если ходов больше нет
         action_draw()
     else:
-        # current_player = human_name
         print(f"Ваш ход {d[human_mark]} (первая цифра ряд, вторая - столбец):")
         while True:
             mv = input(INP_INVITE)
@@ -281,15 +272,12 @@ def attack():
     for dim in vw:
         keys = list(dim.keys())
         values = list(dim.values())
-        # print(keys, values)
         if values.count(EMPTY) == 2 and values.count(mark) == 1:
             # print(lst, dim, lst.index(EMPTY))
             mv = keys[values.index(EMPTY)][0]
             print("*Attacking!*", mv)
             # print(mv)
             return mv
-        # else:
-        #     continue
 
 
 def random_move():
@@ -355,7 +343,6 @@ def try_best_moves():
     best_moves = [(0, 0), (0, 2), (2, 0), (2, 2)]
     shuffle(best_moves)
     best_moves = [(1, 1)] + best_moves
-    # print('best_moves:', best_moves)
     for mv in best_moves:
         # print(mv)
         if mv in get_legal_moves():
@@ -399,7 +386,6 @@ def is_win(mark):
     for dim in DIMENSIONS:
         res = all(field[cell] == mark for cell in dim)
         if res:
-            # print(res)
             print(f'Победу одержал: {players_moves[CURRENT_PLAYER]} ходом {players_moves[CURRENT_MOVE]}')
             return True
 
