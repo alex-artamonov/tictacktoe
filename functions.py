@@ -61,16 +61,14 @@ def clear_field():
     global field
     for cell in field:
         field[cell] = EMPTY
-    # field = {(0, 0): EMPTY, (0, 1): EMPTY, (0, 2): EMPTY,
-    #          (1, 0): EMPTY, (1, 1): EMPTY, (1, 2): EMPTY,
-    #          (2, 0): EMPTY, (2, 1): EMPTY, (2, 2): EMPTY}
+
 
 
 def output_moves():
     # s = '[%s]' % ', '.join(map(str, legal_moves_str()))
-    s = ', '.join(legal_moves_str())
-    s = "Возможные ходы: " + (s or "ходов больше нет.")
-    return s
+    output = ', '.join(legal_moves_str())
+    output = f"Возможные ходы: {(output or 'ходов больше нет.')}"
+    return output
 
 
 def create_score(human_name):
@@ -79,19 +77,13 @@ def create_score(human_name):
     computer_name = 'Компьютер'
     players_moves[COMPUTER_NAME] = computer_name
     players_moves[HUMAN_NAME] = human_name
-    if len(score) == 0:
-        score[human_name], score[computer_name] = 0, 0
-        return True
-    else:
-        print('From create_score(): something is wrong')
-        return False
+    score[human_name], score[computer_name] = 0, 0
+
 
 
 def update_score(winner):
-    if len(score) > 0:
-        score[winner] += 1
-    else:
-        print('From update_score(): something is wrong')
+    score[winner] += 1
+
 
 
 def print_score():
@@ -104,7 +96,7 @@ def print_score():
     lst = [s_border, head, numbers, s_border]
     s = '\n'.join(lst)
     s = shift_right(s, 6)
-    print(s)
+    return s
 
 
 def view_dimensions():
@@ -113,8 +105,7 @@ def view_dimensions():
     for dim in DIMENSIONS:
         dct = {cell: field[cell] for cell in dim}
         view.append(dct)
-        # print(dim)
-    # [print(d) for d in view]
+
     return view
 
 
@@ -444,10 +435,9 @@ def greeting():
     print("Ваше имя?")
     players_moves[HUMAN_NAME] = input(INP_INVITE).capitalize()
     print(f"Привет, {players_moves[HUMAN_NAME]}!")
-    if create_score(players_moves[HUMAN_NAME]):
-        print_score()
-    else:
-        print('*From greeting(): something is wrong*')
+    create_score(players_moves[HUMAN_NAME])
+    print(print_score())
+
 
 
 def start_game():
