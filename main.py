@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from functions import start_game
+from start_game import start_game
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     start_game()

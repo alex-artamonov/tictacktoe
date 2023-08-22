@@ -1,12 +1,9 @@
 def shift_right(text, n=2):
-    s = ''
+    s = ""
     ls = text.splitlines(True)
     for line in ls:
-        s += ' ' * n + str(line)
+        s += " " * n + str(line)
     return s
-
-
-
 
 
 # @border
