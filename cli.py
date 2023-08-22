@@ -1,6 +1,7 @@
 from ui import UI
 import utils as u
 
+INP_INVITE = "?--> "
 
 class Cli(UI):
     def __init__(self, computer_name, player_name, score) -> None:
@@ -55,4 +56,7 @@ class Cli(UI):
         print(s)
         print()
 
+    def get_user_input(self, request: str = INP_INVITE):
+        reply = input(f"{request}\t").strip()
+        return reply
     

@@ -20,3 +20,6 @@ class UI(Protocol):
     
     def display_message(self):
         raise NotImplemented
+    
+    def get_user_input(self):
+        raise NotImplemented

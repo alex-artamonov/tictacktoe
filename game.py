@@ -4,7 +4,7 @@ import cli
 RULE_1 = "*Первое правило крестиков-ноликов: если есть возможность - то делать выигрышный ход*"
 RULE_2 = "*Второе правило  крестиков-ноликов: предотвратить немедленный проигрыш*"
 
-QUIT = "QUIT"
+QUIT = ("q", "Q", "QUIT")
 HUMAN_NAME = "human_name"
 HUMAN_MARK = "human_mark"
 COMPUTER_MARK = "computer_mark"
@@ -13,7 +13,6 @@ CURRENT_PLAYER = "current_player"
 CURRENT_MOVE = "current_move"
 SHIFT_FIELD = 10
 HEADS_TALES = ("1", "2")
-INP_INVITE = "?--> "
 EMPTY = " "
 CROSS = "X"
 NOUGHT = "O"
@@ -127,10 +126,10 @@ class Gameplay:
 
     def play_again_or_leave(self):
         ui.display_message("Сыграем еще? (Y/n)")
-        reply = input(INP_INVITE).upper().strip()
+        reply = ui.get_user_input().upper()
         if reply in ("Y", ""):
             res = True
-        elif reply == "N" or "QUIT":
+        elif reply == "N" or reply in [QUIT]:
             res = False
         else:
             ui.display_message(f"не понял ответа, {self.player_name}, но видимо, нет")
@@ -169,8 +168,8 @@ class Gameplay:
         else:
             ui.display_message(f"Ваш ход {d[human_mark]} (первая цифра ряд, вторая - столбец):")
             while True:
-                mv = input(INP_INVITE)
-                if mv.upper().strip() in ("Q", QUIT):
+                mv = ui.get_user_input()
+                if mv.upper() in QUIT:
                     ui.display_message(f"Ну ладно, пока, {human_name}!")
                     ui.display_score()
                     exit()
@@ -185,7 +184,7 @@ class Gameplay:
                 else:
                     s = "[%s]" % ", ".join(map(str, self.legal_moves_str()))
                     s = s[1:-1]
-                    ui.display_message(f"Такого хода ({mv}) нет, попробуйте еще раз:", s)
+                    ui.display_message(f"Такого хода ({mv}) нет, попробуйте еще раз: {s}")
                     continue
             self.win_or_continue(human_name)
 
@@ -367,7 +366,8 @@ class Gameplay:
         )
         ui.display_message("орел? (1) или решка? (2)")
         self.clear_field()
-        s = input(INP_INVITE).upper().strip()
+        # s = input().upper().strip()
+        s = ui.get_user_input()
 
         if s == QUIT:
             ui.display_message("ну ладно, пока!")
