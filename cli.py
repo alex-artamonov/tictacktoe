@@ -9,6 +9,9 @@ class Cli(UI):
         self.score = score
         print(computer_name, player_name)
 
+    def display_message(self, text: str):
+        print(text)
+
     def display_score(self):
         shift_nbr = 6
         head = "| " + self.computer_name + " | " + self.player_name + " |"
@@ -51,3 +54,5 @@ class Cli(UI):
         s = u.shift_right(s, spaces)
         print(s)
         print()
+
+    
