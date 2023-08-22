@@ -2,6 +2,9 @@ from random import choice
 from random import shuffle
 from sys import exit
 import os
+import ui
+import cli as c
+import utils as u
 
 RULE_1 = "*Первое правило крестиков-ноликов: если есть возможность - то делать выигрышный ход*"
 RULE_2 = "*Второе правило  крестиков-ноликов: предотвратить немедленный проигрыш*"
@@ -32,13 +35,13 @@ field = {(0, 0): EMPTY, (0, 1): EMPTY, (0, 2): EMPTY,
          (2, 0): EMPTY, (2, 1): EMPTY, (2, 2): EMPTY}
 
 
-ROW_0 = [(0, 0), (0, 1), (0, 2)]
-ROW_1 = [(1, 0), (1, 1), (1, 2)]
-ROW_2 = [(2, 0), (2, 1), (2, 2)]
-COL_0 = [(0, 0), (1, 0), (2, 0)]
-COL_1 = [(0, 1), (1, 1), (2, 1)]
-COL_2 = [(0, 2), (1, 2), (2, 2)]
-DIAG_0 = [(0, 0), (1, 1), (2, 2)]
+ROW_0 = [(0, y) for y in range(3)]
+ROW_1 = [(1, y) for y in range(3)]
+ROW_2 = [(2, y) for y in range(3)]
+COL_0 = [(x, 0) for x in range(3)]
+COL_1 = [(x, 1) for x in range(3)]
+COL_2 = [(x, 2) for x in range(3)]
+DIAG_0 = [(x, x) for x in range(3)]
 DIAG_1 = [(0, 2), (1, 1), (2, 0)]
 CORNERS = [(0, 0), (0, 2), (2, 2), (2, 0)]
 SIDES = [(0, 1), (1, 2), (2, 1), (1, 0)]
@@ -48,6 +51,7 @@ DIMENSIONS = [ROW_0, ROW_1, ROW_2, COL_0, COL_1, COL_2, DIAG_0, DIAG_1]
 # previous_human_move = ()
 score = {}
 
+ui = None
 
 def get_moves_count():
     lst = list(field.values())
@@ -64,8 +68,7 @@ def clear_field():
         field[cell] = EMPTY
 
 
-
-def output_moves():
+def get_legal_moves_str():
     # s = '[%s]' % ', '.join(map(str, legal_moves_str()))
     output = ', '.join(legal_moves_str())
     output = f"Возможные ходы: {(output or 'ходов больше нет.')}"
@@ -81,42 +84,15 @@ def create_score(human_name):
     score[human_name], score[computer_name] = 0, 0
 
 
-
 def update_score(winner):
     score[winner] += 1
 
-
-
-def print_score(function=print):
-    computer_name = players_moves[COMPUTER_NAME]
-    human_name = players_moves[HUMAN_NAME]
-    head = '| ' + computer_name + ' | ' + human_name + ' |'
-    s_border = '=' * len(head)
-    numbers = '|' + str(score[computer_name]).center(len(computer_name) + 2)
-    numbers += '|' + str(score[human_name]).center(len(human_name) + 2) + '|'
-    lst = [s_border, head, numbers, s_border]
-    s = '\n'.join(lst)
-    s = shift_right(s, 6)
-    function(s) 
-
-
 def view_dimensions():
     view = []
-
     for dim in DIMENSIONS:
         dct = {cell: field[cell] for cell in dim}
         view.append(dct)
-
     return view
-
-
-def shift_right(text, n=2):
-    s = ''
-    ls = text.splitlines(True)
-    for line in ls:
-        s += ' ' * n + str(line)
-    return s
-
 
 def border(fnc, display=print):
     def wrapper(nbr_spaces=SHIFT_FIELD):
@@ -131,30 +107,30 @@ def border(fnc, display=print):
         else:
             clear_field()
             s = "\nВот как выглядит игровое поле. Сначала указываются ряды, потом - столбцы:"
-            s += "Для ходя введите две цифры подрад, например 01. Чnобы выйти введите quit."
+            s += "Для хода введите две цифры подрад, например 01. Чтобы выйти введите quit."
             display(s)
-            display(output_moves())
+            display(get_legal_moves_str())
             fnc(nbr_spaces)
             display()
     return wrapper
 
 
-@border
-def print_field(spaces, display=print):
-    global EMPTY
-    EMPTY = " "
-    s = "\n    0    1    2\n\n"
-    n = 0
+# @border
+# def display_field(spaces, display=print):
+#     global EMPTY
+#     EMPTY = " "
+#     s = "\n    0    1    2\n\n"
+#     n = 0
 
-    horiz_line = '\n    -----------\n'
-    for i in range(3):
-        s += str(n)
-        t = '  '.join(field[(i, j)] + ' |' for j in range(3))[:-1]   # уберем 1 вертикальный разделитель
-        s += '   ' + t + horiz_line
-        n += 1
-    s = s[:-len(horiz_line)-1]  # уберем 1 горизонтальный разделитель
-    s = shift_right(s, spaces)
-    display(s)
+#     horiz_line = '\n    -----------\n'
+#     for i in range(3):
+#         s += str(n)
+#         t = '  '.join(field[(i, j)] + ' |' for j in range(3))[:-1]   # уберем 1 вертикальный разделитель
+#         s += '   ' + t + horiz_line
+#         n += 1
+#     s = s[:-len(horiz_line)-1]  # уберем 1 горизонтальный разделитель
+#     s = u.shift_right(s, spaces)
+#     display(s)
 
 
 def legal_moves_str():
@@ -188,9 +164,9 @@ def play_again_or_leave(display=print):
 
 
 def action_draw(display=print):
-
+    global ui
     display(f"{players_moves[HUMAN_NAME]}, похоже, у нас ничья!")
-    print_score()
+    ui.display_score()
     play_again_or_leave()
 
 
@@ -206,15 +182,15 @@ def human_move(display=print):
         display(f"Ваш ход {d[human_mark]} (первая цифра ряд, вторая - столбец):")
         while True:
             mv = input(INP_INVITE)
-            if mv.upper().strip() == QUIT:
+            if mv.upper().strip() in ('Q', QUIT):
                 display(f"Ну ладно, пока, {human_name}!")
-                print_score()
+                ui.display_score()
                 exit()
             if mv in legal_moves_str():
                 mv = (int(mv[0]), int(mv[1]))
                 players_moves[CURRENT_MOVE] = mv
                 field[mv] = human_mark
-                print_field(10)
+                ui.display_field(field, 10, get_moves_count, players_moves[CURRENT_PLAYER], mv)
                 break
             else:
                 s = '[%s]' % ', '.join(map(str, legal_moves_str()))
@@ -239,8 +215,8 @@ def computer_move(display=print):
         mv = noughts_strategy()
     players_moves[CURRENT_MOVE] = mv
     field[mv] = computer_mark
-    print_field()
-    display(output_moves())
+    ui.display_field(field,10,get_moves_count, players_moves[CURRENT_PLAYER],mv)
+    display(get_legal_moves_str())
     win_or_continue(computer_name)
 
 
@@ -351,7 +327,7 @@ def win_or_continue(player, display=print):
     computer_mark = players_moves[COMPUTER_MARK]
     mark = ''
     who_moves = None
-
+   
     if player == human_name:
         msg = f'- Congrats, you win, human", {human_name}'
         who_moves = computer_move
@@ -362,12 +338,12 @@ def win_or_continue(player, display=print):
         mark = computer_mark
     else:
         msg = "there's something wrong with this program!"
-
+ # global cli
     if is_win(mark):
         display(f'*winning move: {players_moves[CURRENT_MOVE]}*')
         display(msg)
         update_score(player)
-        print_score()
+        ui.display_score()
         play_again_or_leave()
     else:
         who_moves()
@@ -397,6 +373,7 @@ def where_attack(triad, mark):
 
 def initialize_game(display=print):
     global players_moves
+    global ui
 
     computer_name = players_moves[COMPUTER_NAME]
     human_name = players_moves[HUMAN_NAME]
@@ -417,7 +394,7 @@ def initialize_game(display=print):
             players_moves[COMPUTER_MARK] = NOUGHT
             players_moves[CURRENT_PLAYER] = human_name
             display(f"Угадали, {human_name} - ходите первым за крестики!")
-            display(output_moves())
+            display(get_legal_moves_str())
             human_move()
         else:
             players_moves[HUMAN_MARK] = NOUGHT
@@ -435,18 +412,27 @@ def initialize_game(display=print):
 def greeting(display=print):
     # function("Ваше имя?")
     # players_moves[HUMAN_NAME] = input(INP_INVITE).capitalize()
-    name = str(os.getlogin()).capitalize()
-    players_moves[HUMAN_NAME] = name
+    
+    global score, ui
+    player_name = str(os.getlogin()).capitalize()
+    players_moves[HUMAN_NAME] = player_name
     display(players_moves[HUMAN_NAME] )
     display(f"Привет, {players_moves[HUMAN_NAME]}!")
     create_score(players_moves[HUMAN_NAME])
-    print_score()
-
-
+    ui = c.Cli(players_moves[COMPUTER_NAME], player_name, score)    
+    ui.display_score()
+    s = "\nВот как выглядит игровое поле. Сначала указываются ряды, потом - столбцы:"
+    s += "Для хода введите две цифры подрад, например 01. Чтобы выйти введите quit."
+    display(s)
+    display(get_legal_moves_str())
+ 
 
 def start_game():
     greeting()
-    print_field()
+    counter = get_moves_count()
+    current_player = players_moves[CURRENT_PLAYER]
+    current_move = players_moves[CURRENT_MOVE]
+    ui.display_field(field, 10, counter, current_player, current_move)
     initialize_game()
 
 
