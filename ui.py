@@ -16,3 +16,4 @@ class UI(Protocol):
     
     def display_moves(self):
         raise NotImplemented
+    

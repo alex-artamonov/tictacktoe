@@ -37,3 +37,4 @@ class Cli(UI):
         print(f"\n~~~Ход № {counter}, {current_player}:{current_move}~~~")
         s = u.shift_right(s, spaces)
         print(s)
+        print()
