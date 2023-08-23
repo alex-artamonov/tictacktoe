@@ -1,5 +1,6 @@
 from random import choice, shuffle
 import ui
+from dataclasses import dataclass
 
 RULE_1 = "*Первое правило крестиков-ноликов: если есть возможность - то делать выигрышный ход*"
 RULE_2 = "*Второе правило  крестиков-ноликов: предотвратить немедленный проигрыш*"
@@ -16,6 +17,20 @@ HEADS_TALES = ("1", "2")
 EMPTY = " "
 CROSS = "X"
 NOUGHT = "O"
+rng = range(3)
+ROW_0 = [(0, y) for y in rng]
+ROW_1 = [(1, y) for y in rng]
+ROW_2 = [(2, y) for y in rng]
+COL_0 = [(x, 0) for x in rng]
+COL_1 = [(x, 1) for x in rng]
+COL_2 = [(x, 2) for x in rng]
+DIAG_0 = [(x, y) for x, y in zip(rng, rng)]
+DIAG_1 = [(x, y) for x, y in zip(rng, reversed(rng))]  
+CORNERS = [(x, y) for x in [min(rng),max(rng)] for y in [min(rng), max(rng)]]   
+SIDES = [(0, 1), (1, 2), (2, 1), (1, 0)]
+DIMENSIONS = [ROW_0, ROW_1, ROW_2, COL_0, COL_1, COL_2, DIAG_0, DIAG_1]
+
+
 
 
 class Gameplay:
@@ -27,30 +42,9 @@ class Gameplay:
         CURRENT_PLAYER: "",
         CURRENT_MOVE: (),
     }
-    field = {
-        (0, 0): EMPTY,
-        (0, 1): EMPTY,
-        (0, 2): EMPTY,
-        (1, 0): EMPTY,
-        (1, 1): EMPTY,
-        (1, 2): EMPTY,
-        (2, 0): EMPTY,
-        (2, 1): EMPTY,
-        (2, 2): EMPTY,
-    }
+    field = {(i, j): EMPTY for i in range(3) for j in range(3)}
 
-    ROW_0 = [(0, y) for y in range(3)]
-    ROW_1 = [(1, y) for y in range(3)]
-    ROW_2 = [(2, y) for y in range(3)]
-    COL_0 = [(x, 0) for x in range(3)]
-    COL_1 = [(x, 1) for x in range(3)]
-    COL_2 = [(x, 2) for x in range(3)]
-    DIAG_0 = [(x, x) for x in range(3)]
-    DIAG_1 = [(0, 2), (1, 1), (2, 0)]
-    CORNERS = [(0, 0), (0, 2), (2, 2), (2, 0)]
-    SIDES = [(0, 1), (1, 2), (2, 1), (1, 0)]
 
-    DIMENSIONS = [ROW_0, ROW_1, ROW_2, COL_0, COL_1, COL_2, DIAG_0, DIAG_1]
     # previous_human_move = ()
     score = {}
 
@@ -118,7 +112,7 @@ class Gameplay:
 
     def view_dimensions(self):
         view = []
-        for dim in self.DIMENSIONS:
+        for dim in DIMENSIONS:
             dct = {cell: self.field[cell] for cell in dim}
             view.append(dct)
         return view
@@ -257,7 +251,7 @@ class Gameplay:
     def crosses_strategy(self):
 
         free_corners = list(
-            set(self.get_legal_moves()) & set(self.CORNERS)
+            set(self.get_legal_moves()) & set(CORNERS)
         )  # находим свободные углы
 
         # Первый ход сделать в центр. Остальные ходы, если неприменимы правила 1—2, делаются в тот из свободных углов,
@@ -282,7 +276,7 @@ class Gameplay:
         # а если это невозможно — в любую клетку.
         # Если крестики сделали первый ход в угол, ответить ходом в центр.
 
-        if self.get_moves_count() == 1 and self.current_move in self.SIDES:
+        if self.get_moves_count() == 1 and self.current_move in SIDES:
             self.display_message("?first move on a side? Uhm...")
             mv = (1, 1)
         else:
@@ -336,7 +330,7 @@ class Gameplay:
 
     def is_win(self, mark):
 
-        for dim in self.DIMENSIONS:
+        for dim in DIMENSIONS:
             res = all(self.field[cell] == mark for cell in dim)
             if res:
                 self.display_message(
@@ -357,14 +351,12 @@ class Gameplay:
                 return None
 
     def initialize_game(self):
-
         self.display_message(
             f"Для начала определим, кто первый ходит, {self.computer_name} или "
             f"{self.player_name}. Первый будет ходить крестиками."
         )
         self.display_message("орел? (1) или решка? (2)")
         self.clear_field()
-        # s = input().upper().strip()
         s = self.get_player_input()
 
         if s == QUIT:
