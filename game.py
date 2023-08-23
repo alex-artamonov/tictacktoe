@@ -407,10 +407,6 @@ class Gameplay:
         return self.ui.get_player_input()
 
     def greeting(self):
-        # global ui
-        # ui = cli.Cli(self.computer_name, self.player_name, self.score)
-        # self.player_name
-        # self._players_moves[HUMAN_NAME] = player_name
         self.display_message(self.player_name)
         self.display_message(f"Привет, {self.player_name}!")
         self.create_score(self.player_name)
@@ -422,5 +418,4 @@ class Gameplay:
         self.display_message(self.get_legal_moves_str())
         s = "Для хода введите две цифры подряд, например 01. Чтобы выйти введите quit."
         self.display_message(s)        
-        
-        # ui.display_field()
+
