@@ -1,5 +1,5 @@
 from random import choice, shuffle
-import cli
+import ui
 
 RULE_1 = "*Первое правило крестиков-ноликов: если есть возможность - то делать выигрышный ход*"
 RULE_2 = "*Второе правило  крестиков-ноликов: предотвратить немедленный проигрыш*"
@@ -54,8 +54,10 @@ class Gameplay:
     # previous_human_move = ()
     score = {}
 
-    def __init__(self, player_name):
-        self.player_name = player_name
+    def __init__(self, ui: ui.UI):
+        self.player_name = ui.get_player_name()
+        self.computer_name = ui.get_computer_name()
+        self.ui = ui
 
     def get_moves_count(self):
         lst = list(self.field.values())
@@ -125,17 +127,17 @@ class Gameplay:
         return [str(t[0]) + str(t[1]) for t in self.get_legal_moves()]
 
     def play_again_or_leave(self):
-        ui.display_message("Сыграем еще? (Y/n)")
-        reply = ui.get_user_input().upper()
+        self.display_message("Сыграем еще? (Y/n)")
+        reply = self.get_player_input().upper()
         if reply in ("Y", ""):
             res = True
         elif reply == "N" or reply in [QUIT]:
             res = False
         else:
-            ui.display_message(f"не понял ответа, {self.player_name}, но видимо, нет")
+            self.display_message(f"не понял ответа, {self.player_name}, но видимо, нет")
             res = False
         if res:
-            ui.display_message("Отлично, следующая игра!")
+            self.display_message("Отлично, следующая игра!")
             # initialize_game()
             self.clear_field()
             self._players_moves[HUMAN_MARK], self._players_moves[COMPUTER_MARK] = (
@@ -143,18 +145,18 @@ class Gameplay:
                 self._players_moves[HUMAN_MARK],
             )
             if self._players_moves[COMPUTER_MARK] == CROSS:
-                ui.display_message("теперь я за крестики")
+                self.display_message("теперь я за крестики")
                 self.computer_move()
             else:
                 self.human_move()
         else:
-            ui.display_message(f"Ну ладно, пока, {self.player_name}!")
+            self.display_message(f"Ну ладно, пока, {self.player_name}!")
             exit(0)
 
     def action_draw(self):
         global ui
-        ui.display_message(f"{self.player_name}, похоже, у нас ничья!")
-        ui.display_score()
+        self.display_message(f"{self.player_name}, похоже, у нас ничья!")
+        self.display_score()
         self.play_again_or_leave()
 
     def human_move(self):
@@ -166,25 +168,23 @@ class Gameplay:
         if len(self.get_legal_moves()) == 0:  # если ходов больше нет
             self.action_draw()
         else:
-            ui.display_message(f"Ваш ход {d[human_mark]} (первая цифра ряд, вторая - столбец):")
+            self.display_message(f"Ваш ход {d[human_mark]} (первая цифра ряд, вторая - столбец):")
             while True:
-                mv = ui.get_user_input()
+                mv = self.get_player_input()
                 if mv.upper() in QUIT:
-                    ui.display_message(f"Ну ладно, пока, {human_name}!")
-                    ui.display_score()
+                    self.display_message(f"Ну ладно, пока, {human_name}!")
+                    self.display_score()
                     exit()
                 if mv in self.legal_moves_str():
                     mv = (int(mv[0]), int(mv[1]))
                     self.current_move = mv
                     self.field[mv] = human_mark
-                    ui.display_field(
-                        self.field, 10, self.get_moves_count(), self.current_player, mv
-                    )
+                    self.display_field(self.get_moves_count(), self.current_player, self.current_move)
                     break
                 else:
                     s = "[%s]" % ", ".join(map(str, self.legal_moves_str()))
                     s = s[1:-1]
-                    ui.display_message(f"Такого хода ({mv}) нет, попробуйте еще раз: {s}")
+                    self.display_message(f"Такого хода ({mv}) нет, попробуйте еще раз: {s}")
                     continue
             self.win_or_continue(human_name)
 
@@ -203,10 +203,8 @@ class Gameplay:
             mv = self.noughts_strategy()
         self.current_move = mv
         self.field[mv] = computer_mark
-        ui.display_field(
-            self.field, 10, self.get_moves_count(), self.current_player, mv
-        )
-        ui.display_message(self.get_legal_moves_str())
+        self.display_field(self.get_moves_count(), self.current_player, self.current_move)
+        self.display_message(self.get_legal_moves_str())
         self.win_or_continue(computer_name)
 
     def check_danger(self, mark, msg):
@@ -218,7 +216,7 @@ class Gameplay:
 
             if values.count(mark) == 2 and values.count(EMPTY) == 1:
                 mv = keys[values.index(EMPTY)]
-                ui.display_message(msg)
+                self.display_message(msg)
                 return mv
 
     def attack(self):
@@ -230,11 +228,11 @@ class Gameplay:
             values = list(dim.values())
             if values.count(EMPTY) == 2 and values.count(mark) == 1:
                 mv = keys[values.index(EMPTY)][0]
-                ui.display_message("*Attacking!*", mv)
+                self.display_message("*Attacking!*", mv)
                 return mv
 
     def random_move(self):
-        ui.display_message("*random move!*")
+        self.display_message("*random move!*")
         return choice(self.get_legal_moves())
 
     def get_fartherst_corner(self, corners, prev_mv):
@@ -253,7 +251,7 @@ class Gameplay:
 
                 else:
                     continue
-            ui.display_message("*Ход в дальний угол*")
+            self.display_message("*Ход в дальний угол*")
             return mv
 
     def crosses_strategy(self):
@@ -267,7 +265,7 @@ class Gameplay:
         # https://ru.wikipedia.org/wiki/%D0%9A%D1%80%D0%B5%D1%81%D1%82%D0%B8%D0%BA%D0%B8-%D0%BD%D0%BE%D0%BB%D0%B8%D0%BA%D0%B8
 
         if self.get_moves_count() == 0:  # первый ход - в центр
-            ui.display_message("*За крестики: первый ход сделать в центр*")
+            self.display_message("*За крестики: первый ход сделать в центр*")
             mv = (1, 1)
         else:
             mv = (
@@ -285,7 +283,7 @@ class Gameplay:
         # Если крестики сделали первый ход в угол, ответить ходом в центр.
 
         if self.get_moves_count() == 1 and self.current_move in self.SIDES:
-            ui.display_message("?first move on a side? Uhm...")
+            self.display_message("?first move on a side? Uhm...")
             mv = (1, 1)
         else:
             mv = (
@@ -303,7 +301,7 @@ class Gameplay:
         best_moves = [(1, 1)] + best_moves
         for mv in best_moves:
             if mv in self.get_legal_moves():
-                ui.display_message("*one of the best moves!*")
+                self.display_message("*one of the best moves!*")
                 return mv
             else:
                 continue
@@ -328,10 +326,10 @@ class Gameplay:
             msg = "there's something wrong with this program!"
         # global cli
         if self.is_win(mark):
-            ui.display_message(f"*winning move: {self.current_move}*")
-            ui.display_message(msg)
+            self.display_message(f"*winning move: {self.current_move}*")
+            self.display_message(msg)
             self.update_score(player)
-            ui.display_score()
+            self.display_score()
             self.play_again_or_leave()
         else:
             who_moves()
@@ -341,7 +339,7 @@ class Gameplay:
         for dim in self.DIMENSIONS:
             res = all(self.field[cell] == mark for cell in dim)
             if res:
-                ui.display_message(
+                self.display_message(
                     f"Победу одержал: {self.current_player} ходом {self.current_move}"
                 )
                 return True
@@ -360,17 +358,17 @@ class Gameplay:
 
     def initialize_game(self):
 
-        ui.display_message(
+        self.display_message(
             f"Для начала определим, кто первый ходит, {self.computer_name} или "
             f"{self.player_name}. Первый будет ходить крестиками."
         )
-        ui.display_message("орел? (1) или решка? (2)")
+        self.display_message("орел? (1) или решка? (2)")
         self.clear_field()
         # s = input().upper().strip()
-        s = ui.get_user_input()
+        s = self.get_player_input()
 
         if s == QUIT:
-            ui.display_message("ну ладно, пока!")
+            self.display_message("ну ладно, пока!")
             exit()
         if s in HEADS_TALES:
             t = choice(HEADS_TALES)
@@ -378,33 +376,51 @@ class Gameplay:
                 self._players_moves[HUMAN_MARK] = CROSS
                 self._players_moves[COMPUTER_MARK] = NOUGHT
                 self.current_player = self.player_name
-                ui.display_message(f"Угадали, {self.player_name} - ходите первым за крестики!")
-                ui.display_message(self.get_legal_moves_str())
+                self.display_message(f"Угадали, {self.player_name} - ходите первым за крестики!")
+                self.display_message(self.get_legal_moves_str())
                 self.human_move()
             else:
                 self._players_moves[HUMAN_MARK] = NOUGHT
                 self._players_moves[COMPUTER_MARK] = CROSS
                 self.current_player = self.computer_name
-                ui.display_message(f"Не повезло, {self.player_name} - я хожу первым за крестики!")
+                self.display_message(f"Не повезло, {self.player_name} - я хожу первым за крестики!")
                 self.computer_move()
         else:
-            ui.display_message("Cтранный выбор, ну ладно, тогда мой ход.")
+            self.display_message("Cтранный выбор, ну ладно, тогда мой ход.")
             self._players_moves[HUMAN_MARK] = NOUGHT
             self._players_moves[COMPUTER_MARK] = CROSS
             self.computer_move()
 
+    def display_field(self, counter='<Номер хода>', player= '<чей ход>', move = '<ход>'):
+        self.ui.display_field(self.field,
+                         counter=counter,
+                         current_player=player,
+                         current_move=move)
+        
+    def display_score(self):
+        self.ui.display_score(self.score)
+
+    def display_message(self, text):
+        self.ui.display_message(text)
+        
+    def get_player_input(self):
+        return self.ui.get_player_input()
+
     def greeting(self):
-        global ui
-        ui = cli.Cli(self.computer_name, self.player_name, self.score)
+        # global ui
+        # ui = cli.Cli(self.computer_name, self.player_name, self.score)
         # self.player_name
         # self._players_moves[HUMAN_NAME] = player_name
-        ui.display_message(self.player_name)
-        ui.display_message(f"Привет, {self.player_name}!")
+        self.display_message(self.player_name)
+        self.display_message(f"Привет, {self.player_name}!")
         self.create_score(self.player_name)
         
-        ui.display_score()
-        s = "\nВот как выглядит игровое поле. Сначала указываются ряды, потом - столбцы:"
-        s += "Для хода введите две цифры подряд, например 01. Чтобы выйти введите quit."
-        ui.display_message(s)
-        ui.display_message(self.get_legal_moves_str())
+        self.display_score()
+        s = "Вот как выглядит игровое поле. Сначала указываются ряды, потом - столбцы:"
+        self.display_message(s)
+        self.display_field()
+        self.display_message(self.get_legal_moves_str())
+        s = "Для хода введите две цифры подряд, например 01. Чтобы выйти введите quit."
+        self.display_message(s)        
+        
         # ui.display_field()

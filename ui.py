@@ -3,7 +3,7 @@ from utils import shift_right
 
 
 class UI(Protocol):
-    def display_score(self, function=None):
+    def display_score(self):
         raise NotImplemented
 
     def display_field(self):
@@ -19,6 +19,15 @@ class UI(Protocol):
         raise NotImplemented
     
     def display_message(self):
+        raise NotImplemented
+    
+    def get_player_input(self):
+        raise NotImplemented
+    
+    def get_player_name(self):
+        raise NotImplemented
+    
+    def get_computer_name(self):
         raise NotImplemented
     
     def get_user_input(self):
