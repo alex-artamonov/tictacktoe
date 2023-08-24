@@ -5,6 +5,7 @@ import os
 
 INP_INVITE = "?--> "
 
+
 class Cli(UI):
     def __init__(self, computer_name="Компьютер") -> None:
         self.computer_name = computer_name
@@ -22,9 +23,7 @@ class Cli(UI):
             len(self.computer_name) + 2
         )
         numbers += (
-            "|"
-            + str(score[self.player_name]).center(len(self.player_name) + 2)
-            + "|"
+            "|" + str(score[self.player_name]).center(len(self.player_name) + 2) + "|"
         )
         lst = [s_border, head, numbers, s_border]
         output = "\n".join(lst)
@@ -37,7 +36,6 @@ class Cli(UI):
         counter: str,
         current_player: str,
         current_move: int,
-        
     ):
 
         spaces: int = 10
@@ -60,10 +58,9 @@ class Cli(UI):
     def get_player_input(self, request: str = INP_INVITE):
         reply = input(f"{request}\t").strip()
         return reply
-    
+
     def get_computer_name(self):
         return self.computer_name
-    
+
     def get_player_name(self):
         return str(os.getlogin()).capitalize()
-    

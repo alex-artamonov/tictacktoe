@@ -25,12 +25,10 @@ COL_0 = [(x, 0) for x in rng]
 COL_1 = [(x, 1) for x in rng]
 COL_2 = [(x, 2) for x in rng]
 DIAG_0 = [(x, y) for x, y in zip(rng, rng)]
-DIAG_1 = [(x, y) for x, y in zip(rng, reversed(rng))]  
-CORNERS = [(x, y) for x in [min(rng),max(rng)] for y in [min(rng), max(rng)]]   
+DIAG_1 = [(x, y) for x, y in zip(rng, reversed(rng))]
+CORNERS = [(x, y) for x in [min(rng), max(rng)] for y in [min(rng), max(rng)]]
 SIDES = [(0, 1), (1, 2), (2, 1), (1, 0)]
 DIMENSIONS = [ROW_0, ROW_1, ROW_2, COL_0, COL_1, COL_2, DIAG_0, DIAG_1]
-
-
 
 
 class Gameplay:
@@ -43,7 +41,6 @@ class Gameplay:
         CURRENT_MOVE: (),
     }
     field = {(i, j): EMPTY for i in range(3) for j in range(3)}
-
 
     # previous_human_move = ()
     score = {}
@@ -162,7 +159,9 @@ class Gameplay:
         if len(self.get_legal_moves()) == 0:  # если ходов больше нет
             self.action_draw()
         else:
-            self.display_message(f"Ваш ход {d[human_mark]} (первая цифра ряд, вторая - столбец):")
+            self.display_message(
+                f"Ваш ход {d[human_mark]} (первая цифра ряд, вторая - столбец):"
+            )
             while True:
                 mv = self.get_player_input()
                 if mv.upper() in QUIT:
@@ -173,12 +172,16 @@ class Gameplay:
                     mv = (int(mv[0]), int(mv[1]))
                     self.current_move = mv
                     self.field[mv] = human_mark
-                    self.display_field(self.get_moves_count(), self.current_player, self.current_move)
+                    self.display_field(
+                        self.get_moves_count(), self.current_player, self.current_move
+                    )
                     break
                 else:
                     s = "[%s]" % ", ".join(map(str, self.legal_moves_str()))
                     s = s[1:-1]
-                    self.display_message(f"Такого хода ({mv}) нет, попробуйте еще раз: {s}")
+                    self.display_message(
+                        f"Такого хода ({mv}) нет, попробуйте еще раз: {s}"
+                    )
                     continue
             self.win_or_continue(human_name)
 
@@ -197,7 +200,9 @@ class Gameplay:
             mv = self.noughts_strategy()
         self.current_move = mv
         self.field[mv] = computer_mark
-        self.display_field(self.get_moves_count(), self.current_player, self.current_move)
+        self.display_field(
+            self.get_moves_count(), self.current_player, self.current_move
+        )
         self.display_message(self.get_legal_moves_str())
         self.win_or_continue(computer_name)
 
@@ -368,14 +373,18 @@ class Gameplay:
                 self._players_moves[HUMAN_MARK] = CROSS
                 self._players_moves[COMPUTER_MARK] = NOUGHT
                 self.current_player = self.player_name
-                self.display_message(f"Угадали, {self.player_name} - ходите первым за крестики!")
+                self.display_message(
+                    f"Угадали, {self.player_name} - ходите первым за крестики!"
+                )
                 self.display_message(self.get_legal_moves_str())
                 self.human_move()
             else:
                 self._players_moves[HUMAN_MARK] = NOUGHT
                 self._players_moves[COMPUTER_MARK] = CROSS
                 self.current_player = self.computer_name
-                self.display_message(f"Не повезло, {self.player_name} - я хожу первым за крестики!")
+                self.display_message(
+                    f"Не повезло, {self.player_name} - я хожу первым за крестики!"
+                )
                 self.computer_move()
         else:
             self.display_message("Cтранный выбор, ну ладно, тогда мой ход.")
@@ -383,18 +392,17 @@ class Gameplay:
             self._players_moves[COMPUTER_MARK] = CROSS
             self.computer_move()
 
-    def display_field(self, counter='<Номер хода>', player= '<чей ход>', move = '<ход>'):
-        self.ui.display_field(self.field,
-                         counter=counter,
-                         current_player=player,
-                         current_move=move)
-        
+    def display_field(self, counter="<Номер хода>", player="<чей ход>", move="<ход>"):
+        self.ui.display_field(
+            self.field, counter=counter, current_player=player, current_move=move
+        )
+
     def display_score(self):
         self.ui.display_score(self.score)
 
     def display_message(self, text):
         self.ui.display_message(text)
-        
+
     def get_player_input(self):
         return self.ui.get_player_input()
 
@@ -402,12 +410,11 @@ class Gameplay:
         self.display_message(self.player_name)
         self.display_message(f"Привет, {self.player_name}!")
         self.create_score(self.player_name)
-        
+
         self.display_score()
         s = "Вот как выглядит игровое поле. Сначала указываются ряды, потом - столбцы:"
         self.display_message(s)
         self.display_field()
         self.display_message(self.get_legal_moves_str())
         s = "Для хода введите две цифры подряд, например 01. Чтобы выйти введите quit."
-        self.display_message(s)        
-
+        self.display_message(s)
