@@ -55,12 +55,16 @@ class Cli(UI):
         print(s)
         print()
 
-    def get_player_input(self, request: str = INP_INVITE):
-        reply = input(f"{request}\t").strip()
+    def get_player_input(self, request: str = ''):
+        reply = input(f"{request}\n{INP_INVITE}\t").strip()
         return reply
 
     def get_computer_name(self):
         return self.computer_name
 
-    def get_player_name(self):
+    def get_player_name(self):    # def display_border(self):
+    #     raise NotImplemented
+
+    # def clear_field(self):
+    #     raise NotImplemented
         return str(os.getlogin()).capitalize()

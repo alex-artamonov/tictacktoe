@@ -118,8 +118,7 @@ class Gameplay:
         return [str(t[0]) + str(t[1]) for t in self.get_legal_moves()]
 
     def play_again_or_leave(self):
-        self.display_message("Сыграем еще? (Y/n)")
-        reply = self.get_player_input().upper()
+        reply = self.get_player_input("Сыграем еще? (Y/n)").upper()
         if reply in ("Y", ""):
             res = True
         elif reply == "N" or reply in [QUIT]:
@@ -159,11 +158,12 @@ class Gameplay:
         if len(self.get_legal_moves()) == 0:  # если ходов больше нет
             self.action_draw()
         else:
-            self.display_message(
+            message = (
+            
                 f"Ваш ход {d[human_mark]} (первая цифра ряд, вторая - столбец):"
             )
             while True:
-                mv = self.get_player_input()
+                mv = self.get_player_input(message)
                 if mv.upper() in QUIT:
                     self.display_message(f"Ну ладно, пока, {human_name}!")
                     self.display_score()
@@ -360,9 +360,9 @@ class Gameplay:
             f"Для начала определим, кто первый ходит, {self.computer_name} или "
             f"{self.player_name}. Первый будет ходить крестиками."
         )
-        self.display_message("орел? (1) или решка? (2)")
         self.clear_field()
-        s = self.get_player_input()
+        
+        s = self.get_player_input("орел? (1) или решка? (2)")
 
         if s == QUIT:
             self.display_message("ну ладно, пока!")
@@ -403,8 +403,8 @@ class Gameplay:
     def display_message(self, text):
         self.ui.display_message(text)
 
-    def get_player_input(self):
-        return self.ui.get_player_input()
+    def get_player_input(self, request):
+        return self.ui.get_player_input(request)
 
     def greeting(self):
         self.display_message(self.player_name)
