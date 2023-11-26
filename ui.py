@@ -9,9 +9,6 @@ class UI(Protocol):
     def display_field(self):
         raise NotImplemented
 
-    def display_moves(self):
-        raise NotImplemented
-
     def display_message(self):
         raise NotImplemented
 

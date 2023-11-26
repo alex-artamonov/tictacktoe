@@ -335,13 +335,14 @@ class Gameplay:
 
     def is_win(self, mark):
 
-        for dim in DIMENSIONS:
-            res = all(self.field[cell] == mark for cell in dim)
-            if res:
-                self.display_message(
-                    f"Победу одержал: {self.current_player} ходом {self.current_move}"
-                )
-                return True
+        # for dim in DIMENSIONS:
+        #     res = all(self.field[cell] == mark for cell in dim)
+        res = any(all(self.field[cell] == mark for cell in dim) for dim in DIMENSIONS)
+        if res:
+            self.display_message(
+                f"Победу одержал: {self.current_player} ходом {self.current_move}"
+            )
+            return True
 
     def where_attack(self, triad, mark):
         bln = triad.count(EMPTY) == 1

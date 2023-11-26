@@ -3,7 +3,7 @@ import utils as u
 import os
 
 
-INP_INVITE = "?--> "
+INP_INVITE = "?-->"
 
 
 class Cli(UI):
@@ -33,11 +33,10 @@ class Cli(UI):
     def display_field(
         self,
         field: dict,
-        counter: str,
+        counter: int,
         current_player: str,
         current_move: int,
     ):
-
         spaces: int = 10
         s = "\n    0    1    2\n\n"
         n = 0
